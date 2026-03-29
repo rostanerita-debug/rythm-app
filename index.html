@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="RYTHM">
+<meta name="theme-color" content="#0A0A0A">
+<title>RYTHM</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{--noir:#0A0A0A;--noir2:#141414;--gris:#888;--gris2:#555;--gris3:#2A2A2A;--blanc:#FFFFFF;--vert:#1DB954;--vert2:#15A349;--vp:rgba(29,185,84,0.12);--orange:#FF9F0A;--rouge:#FF3B30;--rp:rgba(255,59,48,0.12);--op:rgba(255,159,10,0.12);--s1:#161616;--s2:#1C1C1C;--b:rgba(255,255,255,0.07)}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden}
+body{background:var(--noir);font-family:'Inter',sans-serif;color:var(--blanc);overscroll-behavior:none}
+#root{height:100vh;display:flex;flex-direction:column;max-width:430px;margin:0 auto;position:relative}
+.screen{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;padding-bottom:90px}
+.screen::-webkit-scrollbar{display:none}
+.nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:rgba(10,10,10,0.95);backdrop-filter:blur(20px);border-top:1px solid var(--b);display:flex;padding-bottom:env(safe-area-inset-bottom);z-index:100}
+.nb{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:10px 4px 8px;background:none;border:none;cursor:pointer;transition:all .2s}
+.nb .ic{font-size:20px;transition:transform .2s}
+.nb .lb{font-size:10px;font-weight:500;color:var(--gris);letter-spacing:.3px;transition:color .2s}
+.nb.active .lb{color:var(--vert)}
+.nb.active .ic{transform:scale(1.1)}
+.fab{position:fixed;bottom:85px;right:20px;width:54px;height:54px;border-radius:27px;background:var(--vert);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 20px rgba(29,185,84,0.4);z-index:99;transition:all .2s;font-size:22px;color:#fff;font-weight:700}
+.fab:active{transform:scale(.92)}
+.sov{position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:200;display:flex;align-items:flex-end;justify-content:center;backdrop-filter:blur(4px)}
+.sht{background:var(--s1);border-radius:24px 24px 0 0;padding:20px 20px calc(24px + env(safe-area-inset-bottom));width:100%;max-width:430px;animation:up .25s cubic-bezier(.32,0,.67,0)}
+@keyframes up{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.hdl{width:32px;height:3px;background:var(--gris2);border-radius:99px;margin:0 auto 20px}
+.card{background:var(--s1);border-radius:20px;padding:18px;border:1px solid var(--b);margin-bottom:10px}
+.card2{background:var(--s2);border-radius:16px;padding:16px;border:1px solid var(--b)}
+.btn1{width:100%;padding:16px;background:var(--vert);border:none;border-radius:14px;color:#fff;font-size:15px;font-weight:700;cursor:pointer;transition:all .15s;font-family:'Inter',sans-serif}
+.btn1:active{transform:scale(.97);background:var(--vert2)}
+.btn2{width:100%;padding:15px;background:var(--s2);border:1px solid var(--b);border-radius:14px;color:var(--blanc);font-size:15px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif}
+.inp{background:var(--s2);border:1px solid var(--b);border-radius:12px;color:var(--blanc);font-family:'Inter',sans-serif;font-size:15px;padding:14px;width:100%;outline:none;transition:border .2s}
+.inp:focus{border-color:var(--vert)}
+.inp::placeholder{color:var(--gris2)}
+.pt{background:var(--s2);border-radius:99px;height:8px;overflow:hidden}
+.pf{height:100%;border-radius:99px;transition:width .8s cubic-bezier(.4,0,.2,1)}
+.chip{display:flex;flex-direction:column;align-items:center;gap:4px;padding:12px 10px;border-radius:14px;cursor:pointer;transition:all .18s;border:1.5px solid transparent;min-width:68px;background:var(--s2)}
+.chip.on{border-color:var(--vert);background:var(--vp)}
+.chip .ci{font-size:22px}
+.chip .cl{font-size:10px;font-weight:600;color:var(--gris)}
+.chip.on .cl{color:var(--vert)}
+.mood{display:flex;flex-direction:column;align-items:center;gap:4px;padding:11px;border-radius:14px;cursor:pointer;transition:all .18s;border:1.5px solid var(--b);flex:1}
+.mood.on{border-color:var(--vert);background:var(--vp)}
+.mood .mi{font-size:24px}
+.mood .ml{font-size:10px;font-weight:600;color:var(--gris)}
+.mood.on .ml{color:var(--vert)}
+.ins{background:linear-gradient(135deg,rgba(29,185,84,0.1),rgba(29,185,84,0.04));border:1px solid rgba(29,185,84,0.2);border-radius:16px;padding:14px 16px;display:flex;align-items:flex-start;gap:10px}
+.rbc{display:flex;align-items:flex-end;gap:3px;height:56px}
+.rc{flex:1;border-radius:4px 4px 0 0;transition:all .5s;min-width:6px}
+@keyframes fi{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.fi{animation:fi .3s ease-out forwards}
+.ey{font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--gris)}
+.lw{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;background:var(--noir);z-index:300}
+</style>
+</head>
+<body>
+<div id="root">
+  <div id="app" class="screen"></div>
+  <nav class="nav" id="nav" style="display:none">
+    <button class="nb active" onclick="G('home')" id="nav-home"><span class="ic">◉</span><span class="lb">Home</span></button>
+    <button class="nb" onclick="G('dep')" id="nav-dep"><span class="ic">＋</span><span class="lb">Dépense</span></button>
+    <button class="nb" onclick="G('ana')" id="nav-ana"><span class="ic">◈</span><span class="lb">Analyse</span></button>
+    <button class="nb" onclick="G('obj')" id="nav-obj"><span class="ic">◎</span><span class="lb">Objectifs</span></button>
+    <button class="nb" onclick="G('ryt')" id="nav-ryt"><span class="ic">⌇</span><span class="lb">Rythme</span></button>
+  </nav>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const SU="https://kteqrhkoprsnhhyohgih.supabase.co";
+const SK="sb_publishable_woOLzRtkihxPLKBhpmLxQA_hfoMUqid";
+const sb=supabase.createClient(SU,SK);
+let CU=null;
+
+const MF=["Janvier","Fevrier","Mars","Avril","Mai","Juin","Juillet","Aout","Septembre","Octobre","Novembre","Decembre"];
+const now=new Date();
+
+const CATS=[
+  {id:"resto",ico:"🍔",lbl:"Resto"},
+  {id:"shopping",ico:"🛍",lbl:"Shopping"},
+  {id:"transport",ico:"🚗",lbl:"Transport"},
+  {id:"factures",ico:"🧾",lbl:"Factures"},
+  {id:"sante",ico:"💊",lbl:"Sante"},
+  {id:"loisirs",ico:"🎬",lbl:"Loisirs"},
+  {id:"beaute",ico:"💅",lbl:"Beaute"},
+  {id:"autre",ico:"📦",lbl:"Autre"},
+];
+
+const MOODS=[
+  {id:"stress",ico:"😤",lbl:"Stress"},
+  {id:"plaisir",ico:"😍",lbl:"Plaisir"},
+  {id:"fatigue",ico:"😴",lbl:"Fatigue"},
+  {id:"neutre",ico:"😐",lbl:"Neutre"},
+];
+
+const MSGS=[
+  "Tu gardes le rythme ce mois-ci 🎯",
+  "Semaine chargee = surveille les restos 👀",
+  "Ton budget est sain. Continue comme ca 💚",
+  "Rappel : epargner c'est se payer en premier 💎",
+  "Fin de mois proche — reste concentree 🎯",
+  "Chaque dh economise est un pas vers tes objectifs ✈️",
+];
+
+function defS(){return{sc:"home",mois:now.getMonth(),annee:now.getFullYear(),salaire:17500,dep:[],obj:[{id:1,ico:"✈️",label:"Voyage Bali",cible:10000,ep:3200,c:"#1DB954"},{id:2,ico:"💅",label:"Glow Up",cible:3000,ep:1500,c:"#9B59B6"},{id:3,ico:"💼",label:"Formation",cible:5000,ep:800,c:"#FF9F0A"}],mi:Math.floor(Math.random()*MSGS.length)};}
+
+function load(){try{const s=localStorage.getItem("rythm_v2");if(s)return JSON.parse(s);}catch(e){}return defS();}
+function save(){try{localStorage.setItem("rythm_v2",JSON.stringify(S));}catch(e){}syncC();}
+async function syncC(){if(!CU)return;try{await sb.from("budget_data").upsert({user_id:CU.id,profil:"rythm",mois:S.mois,annee:S.annee,charges:{dep:S.dep,obj:S.obj},sal:{s:S.salaire},updated_at:new Date().toISOString()},{onConflict:"user_id,profil,mois,annee"});}catch(e){}}
+
+let S=load();
+let SH=null;
+let ND={m:"",cat:"",mood:"",note:""};
+let NO={ico:"🎯",label:"",cible:"",ep:"0"};
+let EOI=null;
+
+function tDep(){return S.dep.filter(d=>d.mo===S.mois&&d.an===S.annee).reduce((s,d)=>s+d.m,0);}
+function reste(){return S.salaire-tDep();}
+function bPct(){return Math.min(100,Math.round((tDep()/S.salaire)*100));}
+function bSt(){const p=bPct();if(p<50)return{c:"#1DB954",l:"Safe 🟢",bg:"rgba(29,185,84,0.12)"};if(p<80)return{c:"#FF9F0A",l:"Attention 🟡",bg:"rgba(255,159,10,0.12)"};return{c:"#FF3B30",l:"Danger 🔴",bg:"rgba(255,59,48,0.12)"};}
+function fmt(n){return Number(n).toLocaleString("fr-FR")+" dh";}
+function fs(n){return Number(n).toLocaleString("fr-FR");}
+function esc(s){return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
+function ej(s){return String(s||"").replace(/\\/g,"\\\\").replace(/'/g,"\\'");}
+
+function mIns(){const d=S.dep.filter(x=>x.mood==="stress");if(d.length<2)return null;const ca=d.reduce((a,x)=>{a[x.cat]=(a[x.cat]||0)+1;return a;},{});const t=Object.entries(ca).sort((a,b)=>b[1]-a[1])[0];const cl=CATS.find(c=>c.id===t?.[0])?.lbl||"depenses";return `${d.length>3?"80%":"La majorite"} de tes ${cl.toLowerCase()} = quand tu es stressee 😤`;}
+function wIns(){const d=S.dep.filter(x=>x.mo===S.mois&&x.an===S.annee);const we=d.filter(x=>{const day=new Date(x.dt).getDay();return day===0||day===6;});const sw=d.filter(x=>{const day=new Date(x.dt).getDay();return day>0&&day<6;});if(!we.length||!sw.length)return null;const mwe=we.reduce((s,x)=>s+x.m,0)/we.length;const msw=sw.reduce((s,x)=>s+x.m,0)/sw.length;const diff=Math.round(((mwe-msw)/msw)*100);if(diff>20)return `Tes depenses augmentent de +${diff}% le week-end 📈`;return null;}
+function sMsg(){const m=mIns();if(m)return m;const w=wIns();if(w)return w;return MSGS[S.mi];}
+
+function G(sc){S.sc=sc;document.querySelectorAll(".nb").forEach(b=>b.classList.remove("active"));const nb=document.getElementById("nav-"+sc);if(nb)nb.classList.add("active");SH=null;render();}
+
+function render(){
+  const app=document.getElementById("app");
+  if(S.sc==="home")app.innerHTML=rHome();
+  else if(S.sc==="dep")app.innerHTML=rDep();
+  else if(S.sc==="ana")app.innerHTML=rAna();
+  else if(S.sc==="obj")app.innerHTML=rObj();
+  else if(S.sc==="ryt")app.innerHTML=rRyt();
+  const ex=document.getElementById("sw");if(ex)ex.remove();
+  if(SH==="dep"){const el=document.createElement("div");el.id="sw";el.innerHTML=rSD();document.getElementById("root").appendChild(el);}
+  else if(SH==="obj"){const el=document.createElement("div");el.id="sw";el.innerHTML=rSO();document.getElementById("root").appendChild(el);}
+}
+
+function rHome(){
+  const r=reste(),p=bPct(),st=bSt(),msg=sMsg();
+  const deps=S.dep.filter(d=>d.mo===S.mois&&d.an===S.annee).slice(-4).reverse();
+  const rc=r<0?"#FF3B30":r<3000?"#FF9F0A":"#FFFFFF";
+  return `<div style="padding:52px 20px 20px" class="fi">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:28px">
+      <div><div class="ey" style="margin-bottom:4px">${MF[S.mois]} ${S.annee}</div><div style="font-size:13px;font-weight:500;color:var(--gris)">Bonjour Rita 👋</div></div>
+      <div style="width:36px;height:36px;border-radius:50%;background:var(--vert);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#fff;cursor:pointer" onclick="G('ryt')">R</div>
+    </div>
+    <div style="background:var(--s1);border-radius:24px;padding:22px;border:1px solid var(--b);margin-bottom:10px">
+      <div class="ey" style="margin-bottom:8px">Reste disponible</div>
+      <div style="font-size:40px;font-weight:800;letter-spacing:-1px;color:${rc};margin-bottom:4px;font-variant-numeric:tabular-nums">${fmt(r)}</div>
+      <div style="font-size:13px;color:var(--gris);margin-bottom:16px">sur ${fmt(S.salaire)} ce mois</div>
+      <div class="pt" style="margin-bottom:8px"><div class="pf" style="width:${p}%;background:${st.c}"></div></div>
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div style="font-size:12px;font-weight:700;color:${st.c}">${st.l}</div>
+        <div style="font-size:12px;color:var(--gris)">${p}% utilise</div>
+      </div>
+    </div>
+    <div class="ins" style="margin-bottom:10px">
+      <span style="font-size:16px">💡</span>
+      <div>
+        <div style="font-size:11px;font-weight:700;color:var(--vert);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:3px">RYTHM insight</div>
+        <div style="font-size:13px;color:rgba(255,255,255,0.85);line-height:1.5">${msg}</div>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px">
+      <div class="card" style="margin:0;text-align:center"><div class="ey" style="margin-bottom:6px">Depense</div><div style="font-size:22px;font-weight:800;color:#FF3B30">${fmt(tDep())}</div></div>
+      <div class="card" style="margin:0;text-align:center"><div class="ey" style="margin-bottom:6px">Transactions</div><div style="font-size:22px;font-weight:800">${S.dep.filter(d=>d.mo===S.mois&&d.an===S.annee).length}</div></div>
+    </div>
+    ${deps.length>0?`
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <div style="font-size:16px;font-weight:700">Recentes</div>
+      <button onclick="G('dep')" style="font-size:12px;font-weight:600;color:var(--vert);background:none;border:none;cursor:pointer">Tout voir →</button>
+    </div>
+    <div class="card" style="padding:0">
+      ${deps.map((d,i)=>{const cat=CATS.find(c=>c.id===d.cat)||{ico:"📦",lbl:"Autre"};const mood=MOODS.find(m=>m.id===d.mood);return `<div style="display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:${i<deps.length-1?"1px solid var(--b)":"none"}">
+        <div style="width:40px;height:40px;border-radius:12px;background:var(--s2);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">${cat.ico}</div>
+        <div style="flex:1"><div style="font-size:14px;font-weight:600">${esc(d.note)||cat.lbl}</div><div style="font-size:11px;color:var(--gris);margin-top:1px">${cat.lbl}${mood?" · "+mood.ico:""}</div></div>
+        <div style="font-size:15px;font-weight:700;color:#FF3B30">−${fmt(d.m)}</div>
+      </div>`;}).join("")}
+    </div>`:`
+    <div style="text-align:center;padding:36px 0;color:var(--gris)">
+      <div style="font-size:36px;margin-bottom:10px">💸</div>
+      <div style="font-size:14px;font-weight:600">Aucune depense ce mois</div>
+      <div style="font-size:12px;margin-top:4px">Appuie sur + pour commencer</div>
+    </div>`}
+  </div>
+  <button class="fab" onclick="SH='dep';render()">＋</button>`;
+}
+
+function rDep(){
+  const deps=S.dep.filter(d=>d.mo===S.mois&&d.an===S.annee).slice().reverse();
+  return `<div style="padding:52px 20px 20px" class="fi">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px">
+      <div><div class="ey" style="margin-bottom:4px">${MF[S.mois]}</div><div style="font-size:26px;font-weight:800;letter-spacing:-.5px">Mes depenses</div></div>
+      <button onclick="SH='dep';render()" style="width:40px;height:40px;border-radius:20px;background:var(--vert);border:none;color:#fff;font-size:20px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center">＋</button>
+    </div>
+    <div class="card" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <div><div class="ey" style="margin-bottom:4px">Total</div><div style="font-size:26px;font-weight:800;color:#FF3B30">${fmt(tDep())}</div></div>
+      <div style="text-align:right"><div class="ey" style="margin-bottom:4px">Nb</div><div style="font-size:26px;font-weight:800">${deps.length}</div></div>
+    </div>
+    ${deps.length===0?`<div style="text-align:center;padding:40px 0;color:var(--gris)"><div style="font-size:40px;margin-bottom:12px">🎯</div><div style="font-size:15px;font-weight:600">Aucune depense</div></div>`:`
+    <div class="card" style="padding:0">
+      ${deps.map((d,i)=>{const cat=CATS.find(c=>c.id===d.cat)||{ico:"📦",lbl:"Autre"};const mood=MOODS.find(m=>m.id===d.mood);const ds=new Date(d.dt).toLocaleDateString("fr-FR",{day:"2-digit",month:"short"});return `
+      <div style="display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:${i<deps.length-1?"1px solid var(--b)":"none"}">
+        <div style="width:44px;height:44px;border-radius:14px;background:var(--s2);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">${cat.ico}</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(d.note)||cat.lbl}</div>
+          <div style="font-size:11px;color:var(--gris);margin-top:2px;display:flex;gap:6px">${ds}${mood?" · "+mood.ico+" "+mood.lbl:""}</div>
+        </div>
+        <div style="text-align:right;flex-shrink:0">
+          <div style="font-size:15px;font-weight:700;color:#FF3B30">−${fmt(d.m)}</div>
+          <div style="font-size:10px;color:var(--gris);margin-top:1px">${cat.lbl}</div>
+        </div>
+      </div>`;}).join("")}
+    </div>`}
+  </div>
+  <button class="fab" onclick="SH='dep';render()">＋</button>`;
+}
+
+function rSD(){
+  const mnt=ND.m||"0",z=!ND.m||ND.m==="0";
+  const ok=ND.m&&ND.m!=="0"&&ND.cat;
+  return `<div class="sov" onclick="if(event.target.classList.contains('sov')){SH=null;render()}">
+    <div class="sht" onclick="event.stopPropagation()">
+      <div class="hdl"></div>
+      <div style="font-size:48px;font-weight:900;letter-spacing:-2px;text-align:center;color:${z?"var(--gris2)":"var(--blanc)"};margin-bottom:18px;font-variant-numeric:tabular-nums">${fs(mnt)} dh</div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:18px">
+        ${[1,2,3,4,5,6,7,8,9,".",0,"⌫"].map(k=>`<button onclick="hk('${k}')" style="padding:15px;border-radius:14px;background:var(--s2);border:1px solid var(--b);color:var(--blanc);font-size:${k==="⌫"?"16":"19"}px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;transition:opacity .1s" onmousedown="this.style.opacity='.6'" onmouseup="this.style.opacity='1'">${k}</button>`).join("")}
+      </div>
+      <div style="overflow-x:auto;display:flex;gap:8px;padding-bottom:4px;margin-bottom:14px;scrollbar-width:none">
+        ${CATS.map(c=>`<div class="chip ${ND.cat===c.id?"on":""}" onclick="ND.cat='${c.id}';render()"><span class="ci">${c.ico}</span><span class="cl">${c.lbl}</span></div>`).join("")}
+      </div>
+      <div style="margin-bottom:14px">
+        <div style="font-size:10px;font-weight:700;color:var(--gris);letter-spacing:2px;text-transform:uppercase;margin-bottom:8px">Comment tu te sens ?</div>
+        <div style="display:flex;gap:7px">
+          ${MOODS.map(m=>`<div class="mood ${ND.mood===m.id?"on":""}" onclick="ND.mood=ND.mood==='${m.id}'?'':'${m.id}';render()"><span class="mi">${m.ico}</span><span class="ml">${m.lbl}</span></div>`).join("")}
+        </div>
+      </div>
+      <input class="inp" placeholder="Note (optionnel)..." style="margin-bottom:14px" value="${esc(ND.note)}" oninput="ND.note=this.value">
+      <button class="btn1" onclick="vDep()" style="${ok?"":"opacity:.35;pointer-events:none"}">Valider</button>
+    </div>
+  </div>`;
+}
+
+function hk(k){
+  if(k==="⌫")ND.m=ND.m.slice(0,-1)||"";
+  else if(k===".")ND.m.includes(".")||(ND.m+=".");
+  else ND.m=ND.m==="0"?String(k):ND.m+String(k);
+  render();
+}
+
+function vDep(){
+  const mnt=parseFloat(ND.m);
+  if(!mnt||mnt<=0||!ND.cat)return;
+  S.dep.push({id:Date.now(),m:mnt,cat:ND.cat,mood:ND.mood,note:ND.note,dt:new Date().toISOString(),mo:S.mois,an:S.annee});
+  ND={m:"",cat:"",mood:"",note:""};SH=null;save();render();toast("Depense ajoutee ✓");
+}
+
+function rAna(){
+  const deps=S.dep.filter(d=>d.mo===S.mois&&d.an===S.annee);
+  const tot=tDep();
+  const bc=CATS.map(c=>{const t=deps.filter(d=>d.cat===c.id).reduce((s,d)=>s+d.m,0);return {...c,t,p:tot>0?Math.round((t/tot)*100):0};}).filter(c=>c.t>0).sort((a,b)=>b.t-a.t);
+  const bm=MOODS.map(m=>{const t=deps.filter(d=>d.mood===m.id).reduce((s,d)=>s+d.m,0);const n=deps.filter(d=>d.mood===m.id).length;return {...m,t,n};}).filter(m=>m.t>0);
+  const ins=[mIns(),wIns()].filter(Boolean);
+  return `<div style="padding:52px 20px 20px" class="fi">
+    <div class="ey" style="margin-bottom:4px">${MF[S.mois]}</div>
+    <div style="font-size:26px;font-weight:800;letter-spacing:-.5px;margin-bottom:24px">Analyse</div>
+    ${deps.length===0?`<div style="text-align:center;padding:60px 0;color:var(--gris)"><div style="font-size:40px;margin-bottom:12px">📊</div><div style="font-size:15px;font-weight:600">Pas encore de donnees</div><div style="font-size:13px;margin-top:4px">Ajoute des depenses pour voir ton analyse</div></div>`:`
+    <div class="card" style="display:flex;justify-content:space-between;margin-bottom:14px">
+      <div><div class="ey" style="margin-bottom:4px">Total</div><div style="font-size:26px;font-weight:800">${fmt(tot)}</div></div>
+      <div style="text-align:right"><div class="ey" style="margin-bottom:4px">Transactions</div><div style="font-size:26px;font-weight:800">${deps.length}</div></div>
+    </div>
+    ${ins.length>0?`<div style="margin-bottom:14px"><div style="font-size:15px;font-weight:700;margin-bottom:10px">🧠 Insights</div>${ins.map(i=>`<div class="ins" style="margin-bottom:8px"><span style="font-size:14px">💥</span><div style="font-size:13px;color:rgba(255,255,255,.85);line-height:1.5">${i}</div></div>`).join("")}</div>`:""}
+    <div class="card" style="margin-bottom:12px">
+      <div style="font-size:15px;font-weight:700;margin-bottom:16px">Par categorie</div>
+      ${bc.map(c=>`<div style="margin-bottom:14px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+          <div style="display:flex;align-items:center;gap:8px"><span style="font-size:16px">${c.ico}</span><span style="font-size:13px;font-weight:600">${c.lbl}</span></div>
+          <div style="display:flex;align-items:center;gap:8px"><span style="font-size:12px;color:var(--gris)">${c.p}%</span><span style="font-size:13px;font-weight:700">${fmt(c.t)}</span></div>
+        </div>
+        <div class="pt"><div class="pf" style="width:${c.p}%;background:var(--vert)"></div></div>
+      </div>`).join("")}
+    </div>
+    ${bm.length>0?`<div class="card"><div style="font-size:15px;font-weight:700;margin-bottom:14px">Par humeur</div><div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px">${bm.map(m=>`<div style="background:var(--s2);border-radius:14px;padding:14px;border:1px solid var(--b)"><div style="font-size:22px;margin-bottom:6px">${m.ico}</div><div style="font-size:12px;font-weight:600;color:var(--gris);margin-bottom:2px">${m.lbl}</div><div style="font-size:16px;font-weight:700">${fmt(m.t)}</div><div style="font-size:11px;color:var(--gris)">${m.n} dep.</div></div>`).join("")}</div></div>`:""}
+    `}
+  </div>`;
+}
+
+function rObj(){
+  return `<div style="padding:52px 20px 20px" class="fi">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px">
+      <div><div class="ey" style="margin-bottom:4px">Motivation</div><div style="font-size:26px;font-weight:800;letter-spacing:-.5px">Objectifs</div></div>
+      <button onclick="EOI=null;NO={ico:'🎯',label:'',cible:'',ep:'0'};SH='obj';render()" style="width:40px;height:40px;border-radius:20px;background:var(--vert);border:none;color:#fff;font-size:20px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center">＋</button>
+    </div>
+    ${S.obj.length===0?`<div style="text-align:center;padding:50px 0;color:var(--gris)"><div style="font-size:40px;margin-bottom:12px">🎯</div><div style="font-size:15px;font-weight:600">Aucun objectif</div></div>`:`
+    ${S.obj.map(o=>{const p=Math.min(100,Math.round((o.ep/o.cible)*100));return `
+    <div style="background:var(--s1);border-radius:20px;padding:18px;border:1px solid var(--b);margin-bottom:10px;cursor:pointer" onclick="EOI=${o.id};NO={ico:'${o.ico}',label:'${ej(o.label)}',cible:'${o.cible}',ep:'${o.ep}'};SH='obj';render()">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
+        <div style="display:flex;align-items:center;gap:10px">
+          <span style="font-size:28px">${o.ico}</span>
+          <div><div style="font-size:15px;font-weight:700">${esc(o.label)}</div><div style="font-size:12px;color:var(--gris);margin-top:1px">Reste ${fmt(o.cible-o.ep)}</div></div>
+        </div>
+        <div style="font-size:22px;font-weight:800;color:${o.c||"var(--vert)"};">${p}%</div>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--gris);margin-bottom:8px"><span>${fmt(o.ep)}</span><span>${fmt(o.cible)}</span></div>
+      <div style="background:var(--s2);border-radius:99px;height:6px;overflow:hidden"><div style="height:100%;border-radius:99px;background:${o.c||"var(--vert)"};width:${p}%;transition:width 1s"></div></div>
+      ${p>=100?`<div style="margin-top:8px;text-align:center;font-size:13px;font-weight:700;color:var(--vert)">🎉 Objectif atteint !</div>`:""}
+    </div>`;}).join("")}
+    <div class="card" style="text-align:center"><div class="ey" style="margin-bottom:6px">Total epargne</div><div style="font-size:28px;font-weight:800;color:var(--vert)">${fmt(S.obj.reduce((s,o)=>s+o.ep,0))}</div></div>
+    `}
+  </div>`;
+}
+
+function rSO(){
+  const ie=EOI!==null;
+  const ICOS=["✈️","💅","💼","🏠","🚗","🎓","💊","🎮","📱","🏋️","👜","💍"];
+  return `<div class="sov" onclick="if(event.target.classList.contains('sov')){SH=null;render()}">
+    <div class="sht" onclick="event.stopPropagation()">
+      <div class="hdl"></div>
+      <div style="font-size:20px;font-weight:700;margin-bottom:16px">${ie?"Modifier":"Nouvel"} objectif</div>
+      <div style="display:flex;gap:8px;overflow-x:auto;margin-bottom:14px;padding-bottom:2px;scrollbar-width:none">
+        ${ICOS.map(i=>`<button onclick="NO.ico='${i}';render()" style="font-size:22px;padding:8px 10px;border-radius:10px;background:${NO.ico===i?"var(--vp)":"var(--s2)"};border:${NO.ico===i?"1.5px solid var(--vert)":"1px solid var(--b)"};cursor:pointer;flex-shrink:0">${i}</button>`).join("")}
+      </div>
+      <input class="inp" placeholder="Nom de l'objectif" style="margin-bottom:10px" value="${esc(NO.label)}" oninput="NO.label=this.value">
+      <input class="inp" type="number" inputmode="numeric" placeholder="Montant cible (dh)" style="margin-bottom:10px" value="${NO.cible}" oninput="NO.cible=this.value">
+      <input class="inp" type="number" inputmode="numeric" placeholder="Deja epargne (dh)" style="margin-bottom:16px" value="${NO.ep}" oninput="NO.ep=this.value">
+      <div style="display:flex;gap:8px">
+        ${ie?`<button onclick="suppO(${EOI})" style="flex:1;padding:15px;background:var(--rp);border:1px solid var(--rouge);border-radius:14px;color:var(--rouge);font-size:14px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif">Supprimer</button>`:""}
+        <button class="btn1" onclick="savO()" style="flex:2">${ie?"Enregistrer":"Ajouter"}</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function savO(){
+  const c=parseFloat(NO.cible),e=parseFloat(NO.ep)||0;
+  if(!NO.label.trim()||!c)return;
+  const COLS=["#1DB954","#9B59B6","#FF9F0A","#3498DB","#E74C3C","#1ABC9C"];
+  if(EOI!==null)S.obj=S.obj.map(o=>o.id===EOI?{...o,ico:NO.ico,label:NO.label.trim(),cible:c,ep:e}:o);
+  else S.obj.push({id:Date.now(),ico:NO.ico,label:NO.label.trim(),cible:c,ep:e,c:COLS[S.obj.length%COLS.length]});
+  SH=null;EOI=null;save();render();
+}
+
+function suppO(id){if(!confirm("Supprimer cet objectif ?"))return;S.obj=S.obj.filter(o=>o.id!==id);SH=null;EOI=null;save();render();}
+
+function rRyt(){
+  const deps=S.dep.filter(d=>d.mo===S.mois&&d.an===S.annee);
+  const jours=Array.from({length:31},(_,i)=>i+1);
+  const today=new Date().getDate();
+  const mxD=Math.max(...jours.map(j=>deps.filter(d=>new Date(d.dt).getDate()===j).reduce((s,d)=>s+d.m,0)),1);
+  const avgD=deps.length>0?tDep()/today:0;
+  const proj=avgD*31;
+  const dep=proj>S.salaire;
+  const mi=mIns(),wi=wIns();
+  return `<div style="padding:52px 20px 20px" class="fi">
+    <div style="margin-bottom:6px"><div class="ey" style="margin-bottom:4px">Signature</div><div style="font-size:26px;font-weight:800;letter-spacing:-.5px">Ton Rythme</div></div>
+    <div style="font-size:13px;color:var(--gris);margin-bottom:24px;font-style:italic">Maitrise ton argent. Garde ton rythme.</div>
+    <div style="background:${dep?"var(--rp)":"var(--vp)"};border:1px solid ${dep?"var(--rouge)":"var(--vert)"};border-radius:20px;padding:18px;margin-bottom:12px">
+      <div style="font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:${dep?"var(--rouge)":"var(--vert)"};margin-bottom:6px">Projection fin de mois</div>
+      <div style="font-size:28px;font-weight:800;color:${dep?"var(--rouge)":"var(--blanc)"};font-variant-numeric:tabular-nums">${fmt(Math.round(proj))}</div>
+      <div style="font-size:13px;color:${dep?"var(--rouge)":"var(--gris)"};margin-top:4px">${dep?`⚠️ Risque depassement de ${fmt(Math.round(proj-S.salaire))}`:"✓ Tu restes dans ton budget"}</div>
+    </div>
+    ${deps.length>0?`<div class="card" style="margin-bottom:12px">
+      <div style="font-size:15px;font-weight:700;margin-bottom:14px">Timeline ${MF[S.mois]}</div>
+      <div class="rbc">
+        ${jours.slice(0,today).map(j=>{const t=deps.filter(d=>new Date(d.dt).getDate()===j).reduce((s,d)=>s+d.m,0);const h=t>0?Math.max(8,Math.round((t/mxD)*50)):4;const we=[0,6].includes(new Date(S.annee,S.mois,j).getDay());const col=t>0?(t>mxD*.7?"#FF3B30":t>mxD*.4?"#FF9F0A":"#1DB954"):"var(--s2)";return `<div class="rc" style="height:${h}px;background:${col};opacity:${we?1:.7}"></div>`;}).join("")}
+      </div>
+      <div style="display:flex;justify-content:space-between;margin-top:6px"><span style="font-size:10px;color:var(--gris)">J1</span><span style="font-size:10px;color:var(--gris)">Aujourd'hui</span></div>
+    </div>`:""}
+    <div style="font-size:15px;font-weight:700;margin-bottom:10px">🧠 Comportement</div>
+    ${[mi,wi].filter(Boolean).map(i=>`<div class="ins" style="margin-bottom:8px"><span style="font-size:14px">💥</span><div style="font-size:13px;color:rgba(255,255,255,.85);line-height:1.5">${i}</div></div>`).join("")}
+    ${![mi,wi].filter(Boolean).length?`<div class="card2" style="text-align:center;padding:20px;margin-bottom:10px"><div style="font-size:13px;color:var(--gris)">Ajoute des depenses avec ton humeur pour voir tes patterns 🧠</div></div>`:""}
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px">
+      <div class="card2" style="text-align:center"><div class="ey" style="margin-bottom:6px">Moy. / jour</div><div style="font-size:18px;font-weight:700">${fmt(Math.round(avgD))}</div></div>
+      <div class="card2" style="text-align:center"><div class="ey" style="margin-bottom:6px">Depenses</div><div style="font-size:18px;font-weight:700">${deps.length}</div></div>
+      <div class="card2" style="text-align:center"><div class="ey" style="margin-bottom:6px">Max dep.</div><div style="font-size:18px;font-weight:700">${fmt(Math.max(...deps.map(d=>d.m),0))}</div></div>
+      <div class="card2" style="text-align:center;cursor:pointer" onclick="eSal()"><div class="ey" style="margin-bottom:6px">Salaire</div><div style="font-size:16px;font-weight:700;color:var(--vert)">${fmt(S.salaire)} ✎</div></div>
+    </div>
+  </div>`;
+}
+
+function eSal(){const v=prompt("Ton salaire net (dh) :");const n=parseFloat(v);if(!isNaN(n)&&n>0){S.salaire=n;save();render();}}
+
+function toast(msg){const t=document.createElement("div");t.textContent=msg;t.style.cssText="position:fixed;top:20px;left:50%;transform:translateX(-50%);background:var(--vert);color:#fff;padding:10px 20px;border-radius:99px;font-size:13px;font-weight:600;z-index:9999;transition:opacity .3s;white-space:nowrap;box-shadow:0 4px 20px rgba(29,185,84,.4)";document.body.appendChild(t);setTimeout(()=>{t.style.opacity="0";setTimeout(()=>t.remove(),300);},2000);}
+
+function rLogin(){
+  return `<div class="lw fi">
+    <div style="width:100%;max-width:340px">
+      <div style="text-align:center;margin-bottom:48px">
+        <div style="font-size:10px;letter-spacing:4px;color:var(--vert);font-weight:700;text-transform:uppercase;margin-bottom:16px">Budget app</div>
+        <div style="font-size:56px;font-weight:900;letter-spacing:-3px;color:var(--blanc)">RYTHM</div>
+        <div style="font-size:13px;color:var(--gris);margin-top:8px;font-style:italic">Maitrise ton argent. Garde ton rythme.</div>
+      </div>
+      <input id="le" class="inp" type="email" inputmode="email" placeholder="Email" style="margin-bottom:10px">
+      <input id="lp" class="inp" type="password" placeholder="Mot de passe" style="margin-bottom:12px" onkeydown="if(event.key==='Enter')dL()">
+      <div id="lerr" style="display:none;background:var(--rp);border:1px solid var(--rouge);color:var(--rouge);border-radius:10px;padding:10px 14px;font-size:13px;margin-bottom:12px"></div>
+      <button class="btn1" onclick="dL()" style="margin-bottom:12px">Connexion / Inscription</button>
+      <div style="display:flex;align-items:center;gap:10px;margin:14px 0"><div style="flex:1;height:1px;background:var(--b)"></div><div style="font-size:11px;color:var(--gris2)">ou</div><div style="flex:1;height:1px;background:var(--b)"></div></div>
+      <button onclick="dG()" style="width:100%;padding:15px;background:var(--s1);border:1px solid var(--b);border-radius:14px;color:var(--blanc);font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;font-family:'Inter',sans-serif">
+        <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+        Continuer avec Google
+      </button>
+      <div style="text-align:center;margin-top:20px;font-size:11px;color:var(--gris2)">Donnees privees et securisees 🔒</div>
+    </div>
+  </div>`;
+}
+
+async function dL(){
+  const email=document.getElementById("le")?.value?.trim();
+  const pwd=document.getElementById("lp")?.value;
+  const err=document.getElementById("lerr");
+  if(!email||!pwd){if(err){err.style.display="block";err.textContent="Remplis email et mot de passe.";}return;}
+  if(err)err.style.display="none";
+  const{data,error}=await sb.auth.signInWithPassword({email,password:pwd});
+  if(error){const{data:d2,error:e2}=await sb.auth.signUp({email,password:pwd});if(e2){if(err){err.style.display="block";err.textContent=e2.message;}return;}if(d2.user){CU=d2.user;aL();return;}}
+  if(data?.user){CU=data.user;aL();}
+}
+
+async function dG(){await sb.auth.signInWithOAuth({provider:"google",options:{redirectTo:window.location.href}});}
+
+function aL(){document.getElementById("nav").style.display="flex";G("home");}
+
+async function init(){
+  const{data:{session}}=await sb.auth.getSession();
+  if(session){CU=session.user;document.getElementById("nav").style.display="flex";G("home");}
+  else{document.getElementById("app").innerHTML=rLogin();}
+}
+
+init();
+if("serviceWorker" in navigator)window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(()=>{}));
+</script>
+</body>
+</html>
