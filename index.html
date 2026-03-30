@@ -232,7 +232,7 @@ function render(){
   else if(S.sc==="obj")app.innerHTML=rObj();
   else if(S.sc==="ryt")app.innerHTML=rRyt();
   const ex=document.getElementById("sw");if(ex)ex.remove();
-  if(SH==="dep"){const el=document.createElement("div");el.id="sw";el.innerHTML=rSD();document.getElementById("root").appendChild(el);}
+  if(SH==="dep"){const el=document.createElement("div");el.id="sw";el.innerHTML=rSD();document.getElementById("root").appendChild(el);setTimeout(attachPad,0);}
   else if(SH==="obj"){const el=document.createElement("div");el.id="sw";el.innerHTML=rSO();document.getElementById("root").appendChild(el);}
   else if(SH==="addch"){const el=document.createElement("div");el.id="sw";el.innerHTML=rSAC();document.getElementById("root").appendChild(el);}
 }
@@ -502,10 +502,8 @@ function rSD(){
       <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px">
         ${[1,2,3,4,5,6,7,8,9,".",0,"⌫"].map(k=>`
           <button
-            ontouchstart="this.style.opacity='.6'"
-            ontouchend="this.style.opacity='1';hk('${k}')"
-            onclick="hk('${k}')"
-            style="padding:14px;border-radius:14px;background:var(--s2);border:1px solid var(--b);color:var(--blanc);font-size:${k==="⌫"?"16":"19"}px;font-weight:600;cursor:pointer;font-family:Inter,sans-serif;transition:opacity .1s;user-select:none">
+            data-key="${k}"
+            style="padding:14px;border-radius:14px;background:var(--s2);border:1px solid var(--b);color:var(--blanc);font-size:${k==="⌫"?"16":"19"}px;font-weight:600;cursor:pointer;font-family:Inter,sans-serif;user-select:none;-webkit-user-select:none">
             ${k}
           </button>`).join("")}
       </div>
@@ -537,7 +535,20 @@ function rSD(){
   </div>`;
 }
 
-// Mise à jour live sans re-render
+// Attacher les events du pavé une seule fois après injection dans le DOM
+function attachPad(){
+  const btns = document.querySelectorAll("[data-key]");
+  btns.forEach(btn => {
+    // Utiliser uniquement pointerdown pour éviter le double déclenchement touch+click
+    btn.addEventListener("pointerdown", function(e){
+      e.preventDefault();
+      this.style.opacity = ".6";
+      hk(this.dataset.key);
+      setTimeout(()=>{ this.style.opacity="1"; }, 100);
+    });
+  });
+}
+
 function hk(k){
   if(k==="⌫") ND.m=ND.m.slice(0,-1)||"";
   else if(k===".") { if(!ND.m.includes(".")) ND.m+="."; }
