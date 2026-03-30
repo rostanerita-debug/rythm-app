@@ -473,13 +473,16 @@ function rDep(){
       ${deps.map((d,i)=>{const cat=CATS.find(c=>c.id===d.cat)||{ico:"📦",lbl:"Autre"};const mood=MOODS.find(m=>m.id===d.mood);const ds=new Date(d.dt).toLocaleDateString("fr-FR",{day:"2-digit",month:"short"});return `
       <div style="display:flex;align-items:center;gap:10px;padding:13px 14px;border-bottom:${i<deps.length-1?"1px solid var(--b)":"none"}">
         <div style="width:42px;height:42px;border-radius:13px;background:var(--s2);display:flex;align-items:center;justify-content:center;font-size:19px;flex-shrink:0">${cat.ico}</div>
-        <div style="flex:1;min-width:0">
+        <div style="flex:1;min-width:0;cursor:pointer" onclick="editDep(${d.id})">
           <div style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(d.note)||cat.lbl}</div>
           <div style="font-size:11px;color:var(--gris);margin-top:2px">${ds}${mood?" · "+mood.ico+" "+mood.lbl:""}</div>
         </div>
-        <div style="text-align:right;flex-shrink:0">
-          <div style="font-size:14px;font-weight:700;color:var(--rouge)">−${fmt(d.m)}</div>
-          <div style="font-size:10px;color:var(--gris)">${cat.lbl}</div>
+        <div style="text-align:right;flex-shrink:0;display:flex;align-items:center;gap:8px">
+          <div>
+            <div style="font-size:14px;font-weight:700;color:var(--rouge)">−${fmt(d.m)}</div>
+            <div style="font-size:10px;color:var(--gris)">${cat.lbl}</div>
+          </div>
+          <button onclick="delDep(${d.id})" style="width:28px;height:28px;border-radius:8px;background:var(--rp);border:none;color:var(--rouge);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0">✕</button>
         </div>
       </div>`;}).join("")}
     </div>`}
@@ -488,32 +491,110 @@ function rDep(){
 }
 
 function rSD(){
-  const mnt=ND.m||"0",z=!ND.m||ND.m==="0";
-  const ok=ND.m&&ND.m!=="0"&&ND.cat;
-  return `<div class="sov" onclick="if(event.target.classList.contains('sov')){SH=null;render()}">
+  return `<div class="sov" onclick="if(event.target.classList.contains('sov')){SH=null;ND={m:'',cat:'',mood:'',note:''};render()}">
     <div class="sht" onclick="event.stopPropagation()">
       <div class="hdl"></div>
-      <div style="font-size:50px;font-weight:900;letter-spacing:-2px;text-align:center;color:${z?"var(--gris2)":"var(--blanc)"};margin-bottom:16px;font-variant-numeric:tabular-nums">${fs(mnt)} dh</div>
+
+      <!-- Affichage montant live -->
+      <div id="dep-display" style="font-size:50px;font-weight:900;letter-spacing:-2px;text-align:center;color:var(--gris2);margin-bottom:16px;font-variant-numeric:tabular-nums;min-height:64px">0 dh</div>
+
+      <!-- Pavé numérique SANS re-render -->
       <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px">
-        ${[1,2,3,4,5,6,7,8,9,".",0,"⌫"].map(k=>`<button onclick="hk('${k}')" style="padding:14px;border-radius:14px;background:var(--s2);border:1px solid var(--b);color:var(--blanc);font-size:${k==="⌫"?"16":"19"}px;font-weight:600;cursor:pointer;font-family:Inter,sans-serif">${k}</button>`).join("")}
+        ${[1,2,3,4,5,6,7,8,9,".",0,"⌫"].map(k=>`
+          <button
+            ontouchstart="this.style.opacity='.6'"
+            ontouchend="this.style.opacity='1';hk('${k}')"
+            onclick="hk('${k}')"
+            style="padding:14px;border-radius:14px;background:var(--s2);border:1px solid var(--b);color:var(--blanc);font-size:${k==="⌫"?"16":"19"}px;font-weight:600;cursor:pointer;font-family:Inter,sans-serif;transition:opacity .1s;user-select:none">
+            ${k}
+          </button>`).join("")}
       </div>
-      <div style="overflow-x:auto;display:flex;gap:8px;padding-bottom:4px;margin-bottom:13px;scrollbar-width:none">
-        ${CATS.map(c=>`<div class="chip ${ND.cat===c.id?"on":""}" onclick="ND.cat='${c.id}';render()"><span class="ci">${c.ico}</span><span class="cl">${c.lbl}</span></div>`).join("")}
+
+      <!-- Catégories -->
+      <div style="overflow-x:auto;display:flex;gap:8px;padding-bottom:4px;margin-bottom:13px;scrollbar-width:none" id="cats-wrap">
+        ${CATS.map(c=>`
+          <div class="chip" id="chip-${c.id}" onclick="selCat('${c.id}')" style="background:var(--s2)">
+            <span class="ci">${c.ico}</span>
+            <span class="cl">${c.lbl}</span>
+          </div>`).join("")}
       </div>
+
+      <!-- Mood -->
       <div style="margin-bottom:13px">
         <div style="font-size:10px;font-weight:700;color:var(--gris);letter-spacing:2px;text-transform:uppercase;margin-bottom:8px">Comment tu te sens ?</div>
         <div style="display:flex;gap:7px">
-          ${MOODS.map(m=>`<div class="mood ${ND.mood===m.id?"on":""}" onclick="ND.mood=ND.mood==='${m.id}'?'':'${m.id}';render()"><span class="mi">${m.ico}</span><span class="ml">${m.lbl}</span></div>`).join("")}
+          ${MOODS.map(m=>`
+            <div class="mood" id="mood-${m.id}" onclick="selMood('${m.id}')">
+              <span class="mi">${m.ico}</span>
+              <span class="ml">${m.lbl}</span>
+            </div>`).join("")}
         </div>
       </div>
-      <input class="inp" placeholder="Note (optionnel)..." style="margin-bottom:13px" value="${esc(ND.note)}" oninput="ND.note=this.value">
-      <button class="btn1" onclick="vDep()" style="${ok?"":"opacity:.35;pointer-events:none"}">Valider</button>
+
+      <input class="inp" id="dep-note" placeholder="Note (optionnel)..." style="margin-bottom:13px" oninput="ND.note=this.value">
+      <button id="dep-btn" class="btn1" onclick="vDep()" style="opacity:.35;pointer-events:none">Valider</button>
     </div>
   </div>`;
 }
 
-function hk(k){if(k==="⌫")ND.m=ND.m.slice(0,-1)||"";else if(k===".")ND.m.includes(".")||(ND.m+=".");else ND.m=ND.m==="0"?String(k):ND.m+String(k);render();}
-function vDep(){const mnt=parseFloat(ND.m);if(!mnt||mnt<=0||!ND.cat)return;S.dep.push({id:Date.now(),m:mnt,cat:ND.cat,mood:ND.mood,note:ND.note,dt:new Date().toISOString(),mo:S.mois,an:S.annee});ND={m:"",cat:"",mood:"",note:""};SH=null;save();render();toast("Depense ajoutee ✓");}
+// Mise à jour live sans re-render
+function hk(k){
+  if(k==="⌫") ND.m=ND.m.slice(0,-1)||"";
+  else if(k===".") { if(!ND.m.includes(".")) ND.m+="."; }
+  else ND.m = ND.m==="0"||ND.m==="" ? String(k) : ND.m+String(k);
+  updDepDisplay();
+}
+
+function updDepDisplay(){
+  const d=document.getElementById("dep-display");
+  const btn=document.getElementById("dep-btn");
+  if(!d) return;
+  const mnt=parseFloat(ND.m)||0;
+  const hasAmt = ND.m && ND.m!=="0" && ND.m!=="" && mnt>0;
+  d.textContent = mnt>0 ? fs(ND.m)+" dh" : "0 dh";
+  d.style.color = hasAmt ? "var(--blanc)" : "var(--gris2)";
+  if(btn){ const ok=hasAmt&&ND.cat; btn.style.opacity=ok?"1":".35"; btn.style.pointerEvents=ok?"auto":"none"; }
+}
+
+function selCat(id){
+  ND.cat = ND.cat===id ? "" : id;
+  document.querySelectorAll(".chip").forEach(el=>{ el.classList.remove("on"); });
+  if(ND.cat){ const el=document.getElementById("chip-"+id); if(el) el.classList.add("on"); }
+  updDepDisplay();
+}
+
+function selMood(id){
+  ND.mood = ND.mood===id ? "" : id;
+  document.querySelectorAll(".mood").forEach(el=>el.classList.remove("on"));
+  if(ND.mood){ const el=document.getElementById("mood-"+id); if(el) el.classList.add("on"); }
+}
+
+function delDep(id){
+  if(!confirm("Supprimer cette depense ?"))return;
+  S.dep=S.dep.filter(d=>d.id!==id);
+  save();render();
+}
+
+function editDep(id){
+  const d=S.dep.find(x=>x.id===id);
+  if(!d)return;
+  const newMnt=prompt("Nouveau montant (dh) :",d.m);
+  if(newMnt===null)return;
+  const v=parseFloat(newMnt);
+  if(isNaN(v)||v<=0){toast("Montant invalide");return;}
+  const newNote=prompt("Note (laisser vide pour garder):",d.note||"");
+  S.dep=S.dep.map(x=>x.id===id?{...x,m:v,note:newNote!==null?newNote:x.note}:x);
+  save();render();toast("Depense modifiee ✓");
+}
+
+function vDep(){
+  const mnt=parseFloat(ND.m);
+  if(!mnt||mnt<=0||!ND.cat)return;
+  const note=document.getElementById("dep-note")?.value||"";
+  S.dep.push({id:Date.now(),m:mnt,cat:ND.cat,mood:ND.mood,note,dt:new Date().toISOString(),mo:S.mois,an:S.annee});
+  ND={m:"",cat:"",mood:"",note:""};
+  SH=null;save();render();toast("Depense ajoutee ✓");
+}
 
 // ── ANALYSE ────────────────────────────────────────────────
 function rAna(){
