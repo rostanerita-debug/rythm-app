@@ -66,6 +66,20 @@ body{background:var(--noir);font-family:Inter,sans-serif;color:var(--blanc);over
 @keyframes fi{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 .fi{animation:fi .28s ease-out forwards}
 .lw{height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;background:var(--noir)}
+/* SWIPE */
+.swipe-row{position:relative;overflow:hidden;border-bottom:1px solid var(--b)}
+.swipe-row:last-child{border-bottom:none}
+.swipe-content{display:flex;align-items:center;gap:10px;padding:13px 14px;background:var(--s1);transition:transform .25s cubic-bezier(.4,0,.2,1);position:relative;z-index:1}
+.swipe-actions{position:absolute;right:0;top:0;bottom:0;display:flex;align-items:stretch;z-index:0}
+.swipe-del{background:var(--rouge);color:#fff;border:none;padding:0 20px;font-size:13px;font-weight:700;cursor:pointer;font-family:Inter,sans-serif}
+.swipe-edit{background:var(--orange);color:#fff;border:none;padding:0 16px;font-size:13px;font-weight:700;cursor:pointer;font-family:Inter,sans-serif}
+/* GRAPHIQUE */
+.chart-bar{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.chart-bar-track{flex:1;background:var(--s2);border-radius:99px;height:10px;overflow:hidden;position:relative}
+.chart-bar-fill{height:100%;border-radius:99px;transition:width 1s cubic-bezier(.4,0,.2,1)}
+/* PROFIL */
+.pref-row{display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid var(--b)}
+.pref-row:last-child{border-bottom:none}
 /* CHECKLIST */
 .ch-row{display:flex;align-items:center;gap:10px;padding:13px 14px;border-bottom:1px solid var(--b);transition:background .15s}
 .ch-row:last-child{border-bottom:none}
@@ -88,6 +102,7 @@ body{background:var(--noir);font-family:Inter,sans-serif;color:var(--blanc);over
     <button class="nb" onclick="G('ana')" id="nav-ana"><span class="ic">◈</span><span class="lb">Analyse</span></button>
     <button class="nb" onclick="G('obj')" id="nav-obj"><span class="ic">◎</span><span class="lb">Objectifs</span></button>
     <button class="nb" onclick="G('ryt')" id="nav-ryt"><span class="ic">⌇</span><span class="lb">Rythme</span></button>
+    <button class="nb" onclick="G('profil')" id="nav-profil"><span class="ic">◎</span><span class="lb">Profil</span></button>
   </nav>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -231,8 +246,11 @@ function render(){
   else if(S.sc==="ana")app.innerHTML=rAna();
   else if(S.sc==="obj")app.innerHTML=rObj();
   else if(S.sc==="ryt")app.innerHTML=rRyt();
+  else if(S.sc==="profil")app.innerHTML=rProfil();
+  else if(S.sc==="hist")app.innerHTML=rHist();
   const ex=document.getElementById("sw");if(ex)ex.remove();
   if(SH==="dep"){const el=document.createElement("div");el.id="sw";el.innerHTML=rSD();document.getElementById("root").appendChild(el);setTimeout(attachPad,0);}
+  else if(SH==="editdep"){const el=document.createElement("div");el.id="sw";el.innerHTML=rEditDep();document.getElementById("root").appendChild(el);setTimeout(attachPadEdit,0);}
   else if(SH==="obj"){const el=document.createElement("div");el.id="sw";el.innerHTML=rSO();document.getElementById("root").appendChild(el);}
   else if(SH==="addch"){const el=document.createElement("div");el.id="sw";el.innerHTML=rSAC();document.getElementById("root").appendChild(el);}
 }
@@ -468,21 +486,28 @@ function rDep(){
       <div class="card" style="margin:0;text-align:center"><div class="ey" style="margin-bottom:5px">Total</div><div style="font-size:22px;font-weight:800;color:var(--rouge)">${fmt(tDep())}</div></div>
       <div class="card" style="margin:0;text-align:center"><div class="ey" style="margin-bottom:5px">Transactions</div><div style="font-size:22px;font-weight:800">${deps.length}</div></div>
     </div>
-    ${deps.length===0?`<div style="text-align:center;padding:40px 0;color:var(--gris)"><div style="font-size:36px;margin-bottom:10px">💸</div><div style="font-size:14px;font-weight:600">Aucune depense</div></div>`:`
+    ${deps.length===0?`<div style="text-align:center;padding:40px 0;color:var(--gris)"><div style="font-size:36px;margin-bottom:10px">💸</div><div style="font-size:14px;font-weight:600">Aucune depense</div><div style="font-size:12px;margin-top:4px">Appuie sur + pour commencer</div></div>`:`
+    <div style="font-size:10px;color:var(--gris2);text-align:center;margin-bottom:8px">← Swipe gauche pour modifier ou supprimer</div>
     <div class="card" style="padding:0">
       ${deps.map((d,i)=>{const cat=CATS.find(c=>c.id===d.cat)||{ico:"📦",lbl:"Autre"};const mood=MOODS.find(m=>m.id===d.mood);const ds=new Date(d.dt).toLocaleDateString("fr-FR",{day:"2-digit",month:"short"});return `
-      <div style="display:flex;align-items:center;gap:10px;padding:13px 14px;border-bottom:${i<deps.length-1?"1px solid var(--b)":"none"}">
-        <div style="width:42px;height:42px;border-radius:13px;background:var(--s2);display:flex;align-items:center;justify-content:center;font-size:19px;flex-shrink:0">${cat.ico}</div>
-        <div style="flex:1;min-width:0;cursor:pointer" onclick="editDep(${d.id})">
-          <div style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(d.note)||cat.lbl}</div>
-          <div style="font-size:11px;color:var(--gris);margin-top:2px">${ds}${mood?" · "+mood.ico+" "+mood.lbl:""}</div>
+      <div class="swipe-row" id="srow-${d.id}">
+        <div class="swipe-actions">
+          <button class="swipe-edit" onclick="openEditDep(${d.id})">✎</button>
+          <button class="swipe-del" onclick="delDep(${d.id})">✕</button>
         </div>
-        <div style="text-align:right;flex-shrink:0;display:flex;align-items:center;gap:8px">
-          <div>
+        <div class="swipe-content" id="sc-${d.id}"
+          ontouchstart="swipeStart(event,${d.id})"
+          ontouchmove="swipeMove(event,${d.id})"
+          ontouchend="swipeEnd(event,${d.id})">
+          <div style="width:42px;height:42px;border-radius:13px;background:var(--s2);display:flex;align-items:center;justify-content:center;font-size:19px;flex-shrink:0">${cat.ico}</div>
+          <div style="flex:1;min-width:0">
+            <div style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(d.note)||cat.lbl}</div>
+            <div style="font-size:11px;color:var(--gris);margin-top:2px">${ds}${mood?" · "+mood.ico+" "+mood.lbl:""}</div>
+          </div>
+          <div style="text-align:right;flex-shrink:0">
             <div style="font-size:14px;font-weight:700;color:var(--rouge)">−${fmt(d.m)}</div>
             <div style="font-size:10px;color:var(--gris)">${cat.lbl}</div>
           </div>
-          <button onclick="delDep(${d.id})" style="width:28px;height:28px;border-radius:8px;background:var(--rp);border:none;color:var(--rouge);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0">✕</button>
         </div>
       </div>`;}).join("")}
     </div>`}
@@ -628,14 +653,18 @@ function rAna(){
     ${mi?`<div class="ins" style="margin-bottom:14px"><span style="font-size:14px">💥</span><div style="font-size:13px;color:rgba(255,255,255,.85);line-height:1.5">${mi}</div></div>`:""}
 
     ${bc.length>0?`<div class="card" style="margin-bottom:12px">
-      <div style="font-size:15px;font-weight:700;margin-bottom:14px">Depenses par categorie</div>
-      ${bc.map(c=>`<div style="margin-bottom:13px">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px">
-          <div style="display:flex;align-items:center;gap:7px"><span style="font-size:15px">${c.ico}</span><span style="font-size:13px;font-weight:600">${c.lbl}</span></div>
-          <div style="display:flex;gap:7px;align-items:center"><span style="font-size:11px;color:var(--gris)">${c.p}%</span><span style="font-size:13px;font-weight:700">${fmt(c.t)}</span></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+        <div style="font-size:15px;font-weight:700">Par categorie</div>
+        <button onclick="G('hist')" style="font-size:11px;font-weight:600;color:var(--vert);background:none;border:none;cursor:pointer">Historique →</button>
+      </div>
+      ${bc.map((c,i)=>{const COLS=["#1DB954","#FF9F0A","#FF3B30","#8B5CF6","#3498DB","#1ABC9C"];const col=COLS[i%COLS.length];return `<div class="chart-bar">
+        <div style="width:22px;font-size:16px;flex-shrink:0">${c.ico}</div>
+        <div class="chart-bar-track">
+          <div class="chart-bar-fill" style="width:${c.p}%;background:${col}"></div>
         </div>
-        <div class="pt"><div class="pf" style="width:${c.p}%;background:var(--vert)"></div></div>
-      </div>`).join("")}
+        <div style="font-size:11px;font-weight:700;color:${col};width:32px;text-align:right;flex-shrink:0">${c.p}%</div>
+        <div style="font-size:12px;font-weight:600;width:75px;text-align:right;flex-shrink:0">${fmt(c.t)}</div>
+      </div>`;}).join("")}
     </div>`:""}
 
     ${bm.length>0?`<div class="card"><div style="font-size:15px;font-weight:700;margin-bottom:12px">Par humeur</div><div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px">${bm.map(m=>`<div style="background:var(--s2);border-radius:13px;padding:13px;border:1px solid var(--b)"><div style="font-size:20px;margin-bottom:5px">${m.ico}</div><div style="font-size:11px;font-weight:600;color:var(--gris);margin-bottom:2px">${m.lbl}</div><div style="font-size:15px;font-weight:700">${fmt(m.t)}</div><div style="font-size:10px;color:var(--gris)">${m.n} dep.</div></div>`).join("")}</div></div>`:""}
@@ -771,6 +800,271 @@ async function dL(){
 
 async function dG(){await sb.auth.signInWithOAuth({provider:"google",options:{redirectTo:window.location.href}});}
 function aL(){document.getElementById("nav").style.display="flex";G("home");}
+
+// ── SWIPE ────────────────────────────────────────────────────
+let swX0=0, swActive=null, swRevealed=new Set();
+
+function swipeStart(e,id){
+  swX0=e.touches[0].clientX;
+  swActive=id;
+}
+
+function swipeMove(e,id){
+  const dx=e.touches[0].clientX-swX0;
+  const el=document.getElementById("sc-"+id);
+  if(!el)return;
+  if(dx<0){ // swipe gauche seulement
+    const shift=Math.max(-130,dx);
+    el.style.transition="none";
+    el.style.transform=`translateX(${shift}px)`;
+  } else if(swRevealed.has(id)&&dx>0){
+    const shift=Math.min(0,dx-130);
+    el.style.transition="none";
+    el.style.transform=`translateX(${shift}px)`;
+  }
+}
+
+function swipeEnd(e,id){
+  const dx=e.changedTouches[0].clientX-swX0;
+  const el=document.getElementById("sc-"+id);
+  if(!el)return;
+  el.style.transition="transform .25s cubic-bezier(.4,0,.2,1)";
+  if(dx<-60){
+    el.style.transform="translateX(-130px)";
+    swRevealed.add(id);
+    // Fermer les autres
+    swRevealed.forEach(oid=>{ if(oid!==id){const o=document.getElementById("sc-"+oid);if(o){o.style.transform="translateX(0)";swRevealed.delete(oid);}} });
+  } else {
+    el.style.transform="translateX(0)";
+    swRevealed.delete(id);
+  }
+}
+
+function closeSwipe(id){
+  const el=document.getElementById("sc-"+id);
+  if(el){el.style.transition="transform .25s cubic-bezier(.4,0,.2,1)";el.style.transform="translateX(0)";}
+  swRevealed.delete(id);
+}
+
+// ── EDIT DÉPENSE SHEET ────────────────────────────────────────
+let editDepId=null;
+let ED={m:"",cat:"",mood:"",note:""};
+
+function openEditDep(id){
+  const d=S.dep.find(x=>x.id===id);
+  if(!d)return;
+  editDepId=id;
+  ED={m:String(d.m),cat:d.cat,mood:d.mood||"",note:d.note||""};
+  SH="editdep"; render();
+}
+
+function rEditDep(){
+  const mnt=parseFloat(ED.m)||0;
+  return `<div class="sov" onclick="if(event.target.classList.contains('sov')){SH=null;ED={m:'',cat:'',mood:'',note:''};render()}">
+    <div class="sht" onclick="event.stopPropagation()">
+      <div class="hdl"></div>
+      <div style="font-size:16px;font-weight:700;margin-bottom:14px;text-align:center">Modifier la depense</div>
+      <div id="edit-display" style="font-size:44px;font-weight:900;letter-spacing:-2px;text-align:center;color:${mnt>0?"var(--blanc)":"var(--gris2)"};margin-bottom:14px;font-variant-numeric:tabular-nums">${mnt>0?fs(ED.m)+" dh":"0 dh"}</div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:14px">
+        ${[1,2,3,4,5,6,7,8,9,".",0,"⌫"].map(k=>`<button data-ekey="${k}" style="padding:13px;border-radius:13px;background:var(--s2);border:1px solid var(--b);color:var(--blanc);font-size:${k==="⌫"?"15":"18"}px;font-weight:600;cursor:pointer;font-family:Inter,sans-serif">${k}</button>`).join("")}
+      </div>
+      <div style="overflow-x:auto;display:flex;gap:7px;padding-bottom:4px;margin-bottom:12px;scrollbar-width:none">
+        ${CATS.map(c=>`<div class="chip ${ED.cat===c.id?"on":""}" id="echip-${c.id}" onclick="selECat('${c.id}')" style="background:var(--s2)"><span class="ci">${c.ico}</span><span class="cl">${c.lbl}</span></div>`).join("")}
+      </div>
+      <div style="display:flex;gap:7px;margin-bottom:12px">
+        ${MOODS.map(m=>`<div class="mood ${ED.mood===m.id?"on":""}" id="emood-${m.id}" onclick="selEMood('${m.id}')"><span class="mi">${m.ico}</span><span class="ml">${m.lbl}</span></div>`).join("")}
+      </div>
+      <input class="inp" id="edit-note" placeholder="Note..." style="margin-bottom:13px" value="${esc(ED.note)}" oninput="ED.note=this.value">
+      <div style="display:flex;gap:8px">
+        <button class="btn2" onclick="SH=null;render()" style="flex:1">Annuler</button>
+        <button class="btn1" id="edit-btn" onclick="saveEditDep()" style="flex:2">Enregistrer</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function attachPadEdit(){
+  document.querySelectorAll("[data-ekey]").forEach(btn=>{
+    btn.addEventListener("pointerdown",function(e){
+      e.preventDefault();
+      this.style.opacity=".6";
+      const k=this.dataset.ekey;
+      if(k==="⌫") ED.m=ED.m.slice(0,-1)||"";
+      else if(k==="."){if(!ED.m.includes("."))ED.m+=".";}
+      else ED.m=ED.m==="0"||ED.m===""?k:ED.m+k;
+      const d=document.getElementById("edit-display");
+      if(d){const v=parseFloat(ED.m)||0;d.textContent=v>0?fs(ED.m)+" dh":"0 dh";d.style.color=v>0?"var(--blanc)":"var(--gris2)";}
+      setTimeout(()=>{this.style.opacity="1";},100);
+    });
+  });
+}
+
+function selECat(id){ED.cat=ED.cat===id?"":id;document.querySelectorAll(".chip").forEach(el=>{if(el.id&&el.id.startsWith("echip-"))el.classList.remove("on");});if(ED.cat){const el=document.getElementById("echip-"+id);if(el)el.classList.add("on");}}
+function selEMood(id){ED.mood=ED.mood===id?"":id;document.querySelectorAll(".mood").forEach(el=>{if(el.id&&el.id.startsWith("emood-"))el.classList.remove("on");});if(ED.mood){const el=document.getElementById("emood-"+id);if(el)el.classList.add("on");}}
+
+function saveEditDep(){
+  const v=parseFloat(ED.m);
+  if(!v||v<=0||!ED.cat)return;
+  const note=document.getElementById("edit-note")?.value||ED.note||"";
+  S.dep=S.dep.map(d=>d.id===editDepId?{...d,m:v,cat:ED.cat,mood:ED.mood,note}:d);
+  SH=null;editDepId=null;save();render();toast("Depense modifiee ✓");
+}
+
+// ── HISTORIQUE ────────────────────────────────────────────────
+function rHist(){
+  const allMonths=[];
+  const seen=new Set();
+  S.dep.forEach(d=>{const k=d.an+"-"+String(d.mo).padStart(2,"0");if(!seen.has(k)){seen.add(k);allMonths.push({an:d.an,mo:d.mo});}});
+  allMonths.sort((a,b)=>b.an!==a.an?b.an-a.an:b.mo-a.mo);
+
+  return `<div style="padding:52px 20px 20px" class="fi">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:22px">
+      <button onclick="G('ana')" style="background:var(--s2);border:none;border-radius:10px;padding:8px 12px;color:var(--blanc);font-size:13px;cursor:pointer">← Retour</button>
+      <div style="font-size:22px;font-weight:800;letter-spacing:-.5px">Historique</div>
+    </div>
+    ${allMonths.length===0?`<div style="text-align:center;padding:50px 0;color:var(--gris)"><div style="font-size:36px;margin-bottom:12px">📅</div><div style="font-size:14px;font-weight:600">Aucun historique</div></div>`:`
+    ${allMonths.map(({an,mo})=>{
+      const deps=S.dep.filter(d=>d.mo===mo&&d.an===an);
+      const tot=deps.reduce((s,d)=>s+d.m,0);
+      const nb=deps.length;
+      const cats=CATS.map(c=>({...c,t:deps.filter(d=>d.cat===c.id).reduce((s,d)=>s+d.m,0)})).filter(c=>c.t>0).sort((a,b)=>b.t-a.t);
+      return `<div class="card" style="margin-bottom:10px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+          <div>
+            <div style="font-size:16px;font-weight:700">${MF[mo]} ${an}</div>
+            <div style="font-size:11px;color:var(--gris);margin-top:2px">${nb} depense${nb>1?"s":""}</div>
+          </div>
+          <div style="font-size:20px;font-weight:800;color:var(--rouge)">${fmt(tot)}</div>
+        </div>
+        ${cats.slice(0,3).map(c=>{const p=tot>0?Math.round((c.t/tot)*100):0;return `<div class="chart-bar" style="margin-bottom:8px">
+          <div style="font-size:14px;width:20px;flex-shrink:0">${c.ico}</div>
+          <div class="chart-bar-track"><div class="chart-bar-fill" style="width:${p}%;background:var(--vert)"></div></div>
+          <div style="font-size:10px;color:var(--gris);width:28px;text-align:right;flex-shrink:0">${p}%</div>
+          <div style="font-size:11px;font-weight:600;width:70px;text-align:right;flex-shrink:0">${fmt(c.t)}</div>
+        </div>`;}).join("")}
+        <button onclick="exportMois(${mo},${an})" style="margin-top:8px;width:100%;padding:10px;background:var(--s2);border:1px solid var(--b);border-radius:10px;color:var(--vert);font-family:Inter,sans-serif;font-size:12px;font-weight:600;cursor:pointer">↓ Exporter CSV</button>
+      </div>`;
+    }).join("")}
+    `}
+  </div>`;
+}
+
+// ── EXPORT CSV ────────────────────────────────────────────────
+function exportMois(mo,an){
+  const deps=S.dep.filter(d=>d.mo===mo&&d.an===an);
+  if(!deps.length){toast("Aucune depense ce mois");return;}
+  let csv="Date,Categorie,Montant,Humeur,Note\n";
+  deps.forEach(d=>{
+    const cat=CATS.find(c=>c.id===d.cat)?.lbl||"Autre";
+    const mood=MOODS.find(m=>m.id===d.mood)?.lbl||"";
+    const dt=new Date(d.dt).toLocaleDateString("fr-FR");
+    csv+=`${dt},${cat},${d.m},${mood},"${(d.note||"").replace(/"/g,"'")}"\n`;
+  });
+  const blob=new Blob([csv],{type:"text/csv;charset=utf-8;"});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement("a");
+  a.href=url; a.download=`RYTHM_${MF[mo]}_${an}.csv`;
+  document.body.appendChild(a); a.click();
+  document.body.removeChild(a); URL.revokeObjectURL(url);
+  toast("Export CSV telecharge ✓");
+}
+
+// ── PROFIL ────────────────────────────────────────────────────
+function rProfil(){
+  const user=CU?.email||"rita@rythm.app";
+  const totalDeps=S.dep.length;
+  const totalMontant=S.dep.reduce((s,d)=>s+d.m,0);
+  const topCat=CATS.map(c=>({...c,t:S.dep.filter(d=>d.cat===c.id).reduce((s,d)=>s+d.m,0)})).sort((a,b)=>b.t-a.t)[0];
+  return `<div style="padding:52px 20px 20px" class="fi">
+    <div class="ey" style="margin-bottom:4px">Mon compte</div>
+    <div style="font-size:24px;font-weight:800;letter-spacing:-.5px;margin-bottom:22px">Profil</div>
+
+    <!-- Avatar -->
+    <div class="card" style="display:flex;align-items:center;gap:14px;margin-bottom:16px">
+      <div style="width:52px;height:52px;border-radius:26px;background:linear-gradient(135deg,#1DB954,#0a8f3a);display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:900;color:#fff;flex-shrink:0">R</div>
+      <div>
+        <div style="font-size:16px;font-weight:700">Rita Rostane</div>
+        <div style="font-size:12px;color:var(--gris);margin-top:2px">${user}</div>
+      </div>
+    </div>
+
+    <!-- Stats globales -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px">
+      <div class="card2" style="text-align:center"><div class="ey" style="margin-bottom:5px">Total depenses</div><div style="font-size:20px;font-weight:800;color:var(--rouge)">${totalDeps}</div></div>
+      <div class="card2" style="text-align:center"><div class="ey" style="margin-bottom:5px">Total depense</div><div style="font-size:18px;font-weight:800">${fmt(totalMontant)}</div></div>
+      ${topCat&&topCat.t>0?`<div class="card2" style="text-align:center;grid-column:span 2"><div class="ey" style="margin-bottom:5px">Categorie principale</div><div style="font-size:22px;margin-bottom:3px">${topCat.ico}</div><div style="font-size:14px;font-weight:700">${topCat.lbl} · ${fmt(topCat.t)}</div></div>`:""}
+    </div>
+
+    <!-- Parametres salaire -->
+    <div class="card" style="margin-bottom:12px">
+      <div style="font-size:15px;font-weight:700;margin-bottom:14px">Parametres salaire</div>
+      <div class="pref-row">
+        <div><div style="font-size:14px;font-weight:600">Profil actif</div><div style="font-size:11px;color:var(--gris);margin-top:2px">${S.profil==="s1"?"Salaire actuel":"Nouveau salaire"}</div></div>
+        <div style="display:flex;background:var(--s2);border-radius:8px;padding:3px;gap:3px">
+          <button onclick="S.profil='s1';save();render()" style="padding:5px 10px;border-radius:6px;font-size:11px;font-family:Inter,sans-serif;font-weight:700;cursor:pointer;border:none;background:${S.profil==="s1"?"#fff":"transparent"};color:${S.profil==="s1"?"var(--noir)":"var(--gris)"}">S1</button>
+          <button onclick="S.profil='s2';save();render()" style="padding:5px 10px;border-radius:6px;font-size:11px;font-family:Inter,sans-serif;font-weight:700;cursor:pointer;border:none;background:${S.profil==="s2"?"#fff":"transparent"};color:${S.profil==="s2"?"var(--noir)":"var(--gris)"}">S2</button>
+        </div>
+      </div>
+      <div class="pref-row">
+        <div><div style="font-size:14px;font-weight:600">Salaire S1</div><div style="font-size:11px;color:var(--gris);margin-top:2px">Salaire actuel</div></div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-size:15px;font-weight:700;color:var(--vert)">${fmt(S.sal.s1)}</span>
+          <button onclick="const v=prompt('Salaire S1 (dh) :',S.sal.s1);const n=parseFloat(v);if(!isNaN(n)&&n>0){S.sal.s1=n;save();render();}" style="background:var(--s2);border:1px solid var(--b);border-radius:8px;padding:5px 10px;color:var(--gris);font-size:11px;cursor:pointer;font-family:Inter,sans-serif">✎</button>
+        </div>
+      </div>
+      <div class="pref-row">
+        <div><div style="font-size:14px;font-weight:600">Salaire S2</div><div style="font-size:11px;color:var(--gris);margin-top:2px">Nouveau salaire</div></div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-size:15px;font-weight:700;color:var(--vert)">${fmt(S.sal.s2)}</span>
+          <button onclick="const v=prompt('Salaire S2 (dh) :',S.sal.s2);const n=parseFloat(v);if(!isNaN(n)&&n>0){S.sal.s2=n;save();render();}" style="background:var(--s2);border:1px solid var(--b);border-radius:8px;padding:5px 10px;color:var(--gris);font-size:11px;cursor:pointer;font-family:Inter,sans-serif">✎</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mois/Année -->
+    <div class="card" style="margin-bottom:12px">
+      <div style="font-size:15px;font-weight:700;margin-bottom:14px">Periode</div>
+      <div style="display:flex;gap:10px">
+        <div style="flex:1">
+          <div class="ey" style="margin-bottom:6px">Mois</div>
+          <select class="inp" style="padding:11px 14px" onchange="S.mois=+this.value;save();render()">
+            ${MF.map((m,i)=>`<option value="${i}" ${S.mois===i?"selected":""} style="background:#1C1C1C">${m}</option>`).join("")}
+          </select>
+        </div>
+        <div style="min-width:90px">
+          <div class="ey" style="margin-bottom:6px">Annee</div>
+          <select class="inp" style="padding:11px 14px" onchange="S.annee=+this.value;save();render()">
+            ${[2025,2026,2027].map(y=>`<option value="${y}" ${S.annee===y?"selected":""} style="background:#1C1C1C">${y}</option>`).join("")}
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="card" style="margin-bottom:12px">
+      <div style="font-size:15px;font-weight:700;margin-bottom:14px">Actions</div>
+      <div class="pref-row" style="cursor:pointer" onclick="exportMois(S.mois,S.annee)">
+        <div><div style="font-size:14px;font-weight:600">Exporter le mois</div><div style="font-size:11px;color:var(--gris);margin-top:2px">${MF[S.mois]} ${S.annee} en CSV</div></div>
+        <span style="font-size:16px;color:var(--vert)">↓</span>
+      </div>
+      <div class="pref-row" style="cursor:pointer" onclick="if(confirm('Reinitialiser les paiements ?')){S.checked[S.profil]={};S.dates[S.profil]={};save();render();}">
+        <div><div style="font-size:14px;font-weight:600">Reinitialiser le mois</div><div style="font-size:11px;color:var(--gris);margin-top:2px">Effacer les cochages</div></div>
+        <span style="font-size:16px;color:var(--gris)">↺</span>
+      </div>
+      <div class="pref-row" style="cursor:pointer" onclick="if(confirm('Supprimer toutes les depenses ?')){S.dep=[];save();render();}">
+        <div><div style="font-size:14px;font-weight:600;color:var(--rouge)">Effacer les depenses</div><div style="font-size:11px;color:var(--gris);margin-top:2px">Supprimer toutes les depenses</div></div>
+        <span style="font-size:16px;color:var(--rouge)">✕</span>
+      </div>
+    </div>
+
+    <!-- Deconnexion -->
+    <button onclick="sb.auth.signOut().then(()=>{CU=null;document.getElementById('nav').style.display='none';document.getElementById('app').innerHTML=rLogin();})" style="width:100%;padding:14px;background:var(--rp);border:1px solid var(--rouge);border-radius:14px;color:var(--rouge);font-family:Inter,sans-serif;font-size:14px;font-weight:600;cursor:pointer">
+      Deconnexion
+    </button>
+
+    <div style="text-align:center;margin-top:16px;font-size:11px;color:var(--gris2)">RYTHM v2.0 · Maitrise ton argent. Garde ton rythme.</div>
+  </div>`;
+}
 
 async function init(){
   const{data:{session}}=await sb.auth.getSession();
